@@ -1,0 +1,185 @@
+---
+title: "Análisis sobre el uso del dispositivo Fitbit"
+author: "GAM"
+date: "2024-03-12"
+output:
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(gridExtra)
+library(kableExtra)
+```
+
+
+## Avances de análisis de uso de las aplicaciónes de dispositivo Fitbit
+
+La finalidad del presente análisis es determinar qué usos dan los usuarios al dispositivo Fitbit, así como incluir algunas recomendaciones para el departamento de marketing.
+
+El análisis se lleva a cabo sobre una base de datos que cuenta con los registros de 33 usuarios. La fuente original de los datos la puedes ver en el siguiente enlace: https://www.kaggle.com/arashnic/fitbit
+
+Se realiza un análisis sobre las entradas de cada usuario en el dispositivo, esto para dar una idea de que aplicación es la que mas se usa en el dispositivo y saber si los usuarios están sacando el mayor provecho a este. 
+
+Para efectos del estudio, llamamos aplicación a cada tipo de dato  sobre el usuario que se registra, ya sea actividad diaria, registro de peso, medición de frecuencia cardíaca, etc. 
+
+Se creo un Data Frame en el que se pudiera visualizar el conteo de los registros de cada usuario y con este crear la siguiente visualización para ver de manera general el uso que se le da al dispositivo. 
+
+```{r CARGAR ENTORNO , echo = FALSE}
+load("Entorno_final_v2.RData")
+```
+
+
+```{r grafico conteos, echo = FALSE, , fig.width = 6, fig.height = 4, fig.align = "center"}
+print(grafico_conteos_t)
+```
+
+
+Se puede apreciar a simple vista en este análisis que la aplicación más usada o la que más tienen activada los usuarios es el registro de la actividad diaria y mets por minuto, aunque hay que señalar que el MET es un calculo que parte de la quema de calorías por lo que las entradas pueden estar al mismo nivel que la actividad diaria y no es un registro como tal.
+
+**¿Qué es lo que se puede analizar con el uso correcto del dispositivo?**
+
+<br>
+
+## Análisis General 
+
+Una de las cosas que se puede analizar es la relación entre distintas variables. En las siguientes se puede observar la relaciones entre algunas de las variables que el dispositivo almacena.
+
+
+```{r visualizacion relaciones, fig.show = 'hold', out.width = '49%', echo = FALSE}
+print(grafico1.2) 
+print(grafico2.2)
+```
+<br>
+<br>
+Es proporcional la quema de calorias con los pasos totales y tipo de actividad.
+<br>
+<br>
+
+```{r grafico dispersion, echo=FALSE, fig.align="center", fig.height=3, message=FALSE}
+print(grafico3)
+```
+
+En el gráfico anterior se observa una relación positiva entre el número de pasos totales y la cantidad de calorías quemadas, quiere decir que a medida que aumentan los pasos totales, se tiende a quemar más calorías. 
+
+
+<br>
+En la tabla de conteos vemos el total de entradas de los 33 usuarios para cada aplicación del dispositivo, de aquí se parte para extraer la información del usuario con los datos más completos para poder realizar un análisis más detallado, en este caso el usuario con el id = 6962181067 
+
+
+
+```{r mostrar seleccion tabla, echo=FALSE}
+filas_seleccionadas_conteos <- slice(todos_los_conteos_redondeado, 23:27)
+knitr::kable(filas_seleccionadas_conteos)
+
+```
+
+<br>
+<br>
+
+## Análisis Usuario Id = 6962181067
+
+
+En el gráfico Calorías y pasos por días vemos la tendencia que tienen la quema de calorías segun los pasos que da el usuario, cuantos mas pasos mayor numero de calorías quemadas, llegando a 20,000 pasos que conlleva a la quema de 2571. 
+
+<br>
+```{r grafico calorias y pasos, echo=FALSE, fig.align="center", fig.width=10, fig.height=4}
+print(grafico4)
+```
+
+Al analizar la frecuencia cardíaca junto con esos minutos muy activos ayudaría a encontrar alguna irregularidad en la frecuencia cardíaca del usuario. 
+
+```{r graficos 5  , echo=FALSE,fig.align="center", fig.width=10, fig.height=4}
+print(grafico5) 
+
+```
+
+
+
+
+## El sueño 
+
+
+
+El dispositivo permite emparejar el análisis del sueño junto con los datos de la frecuencia cardíaca;se puede observar de manera especulativa las diferentes fases del sueño por las que pasa el usuario. 
+
+Al principio la frecuencia cardíaca disminuye a  medida que empieza dormir, con una bajada en la frecuencia cardíaca empieza a entrar a lo que se conoce como el sueño ligero ,  hasta llegar al punto mas bajo que sería el sueño profundo o no REM donde la frecuencia cardíaca disminuye y tiende a estabilizarse ahí mientras dura el sueño profundo, a medida que se entra en el sueño REM que es la fase en el que ocurren los sueños vívidos , la actividad cerebral es más parecida a la vigilia, la frecuencia cardíaca aumenta, para luego volver a entrar en sueño profundo y finalmente aumentar al pasar al sueño ligero antes de despertar. 
+
+<br>
+```{r grafico 8, echo=FALSE, fig.align="center", fig.height=4, fig.width=10, message=FALSE, warning=FALSE}
+
+print(grafico_tipo_sueno)
+```
+
+<br>
+Con los datos que tenemos sobre el sueño del usuario se puede calcular tanto la eficiencia del sueño como el tiempo en que se tarda en conciliar el sueño ( esto con la idea de que el tiempo total en cama menos el tiempo que pasa dormido,  es antes de dormir y no  al despertar) la formula utilizada para calcular esto es  __"eficiencia del sueño = Minutos totales dormido / tiempo total en cama *100"__. 
+
+<br>
+
+```{r grafico sueño, echo=FALSE,fig.align="center", fig.width=10, fig.height=4}
+print(grafico_sueno)
+```
+
+En el anterior gráfico es notable que cuanto menos tiempo se tarda en conciliar el sueño , la eficiencia y calidad del sueño es mayor. 
+
+
+El resultado  al calcular la correlación entre el tiempo para conciliar el sueño y la eficiencia del sueño nos dice que existe una correlación fuerte ya que esta cerca del 1 y al mismo tiempo negativa, lo que nos quiere decir que mientras una variable aumenta otra disminuye, en este caso mientras mayor sea el tiempo para conciliar el sueño, menor sera la eficiencia del mismo. 
+
+
+```{r correlacion sueno}
+correlacion_sueno <- cor(User_1067$Tiempo_conciliar_sueno, User_1067$Eficiencia_del_sueno)
+print(correlacion_sueno)
+```
+
+
+<br>
+
+## Tipo de actividad 
+
+En el gráfico sobre la distribución del tipo de actividad nos muestra el desglose del tipo de actividad para cada día, el total de minutos sedentarios, moderadamente activos, activos y muy activos, así se puede comparar con las calorías quemadas que es el dato se encuentra en la parte superior de cada barra.
+
+
+Este gráfico puede proporcionar una idea de qué combinación de tiempo y tipo de actividad desarrollada podría ajustarse mejor a las metas del usuario.
+
+
+```{r distribucion tipo de actividad,echo=FALSE,fig.align="center", fig.width=10, fig.height=6 }
+print(grafico9)
+
+```
+
+
+Ya que se cuenta con registros del usuario también por horas y minutos, después de realizar las conversiones de estas medidas se realiza un análisis de correlación por horas según cada tipo de aplicación, esto para ver que variables tienen una correlación positiva o negativa.
+
+
+```{r correlacion por horas, echo=FALSE}
+print(User_1067_hr_cor_redondeado)
+```
+
+Las relaciones entre variables de actividad física con la quema de calorías tienen una alta correlación positiva entre ellas, esto sugiera que están estrechamente vinculadas es decir, al aumentar una aumenta la otra. 
+
+El resultado  de la  correlación entre la frecuencia cardíaca y valor del sueño es -0.38, esto nos muestra una  correlación negativa, lo quiere decir que hay una relación inversa entre las variables por lo que a una mayor calidad de sueño , una menor frecuencia cardíaca.
+
+<br>
+
+## Conclusiones
+
+Al analizar este conjunto de datos podemos concluir lo siguiente:
+
+## Importancia del Registro de todos los datos 
+
+* Es de suma importancia que el usuario registre los datos en cada una de las aplicaciones del producto, ya que al no contar con estos datos el dispositivo Fitbit no llega a exprimir la total de su funcionalidad ni a cumplir con su objetivo que es **una mejor calidad de vida**. 
+
+## Recomendaciones para Mejorar la experiencia
+
+__Implementar rewards y logros__
+
+ * Una de las recomendaciones podría ser implementar algún tipo de rewards o logros desbloqueados que premie al usuario al llegar a ciertos niveles, para esto tendría que cumplir con el registro de todas las aplicaciones y haría más interesante el uso del dispositivo. Ademas estas podrían de alguna manera ir subiendo de categoría y poco a poco así el usuario iría superándose y observando su avance, esto  crearía una mayor motivación a usar el dispositivo ya que ve una **mejora en su calidad de vida** junto con sus logros. 
+
+__Acceso a material gráfico y tips de mejora__
+
+* Otra opción interesante es darle acceso al usuario este tipo de material gráfico y mostrarle como influye cada tipo de actividad en su vida y al mismo tiempo incluir alguna aplicación donde muestre los tips para **mejorar su calidad de vida** y  para alcanzar sus metas.
+
+__Compartir y competencia saludable__
+
+* Por último se podría considerar  el poder compartir con gente de su zona y con rangos o características similares, tener algún tipo de visualización como un "top ranking"  sobre otros usuarios de la zona y crear otra fuente de motivación como la sana competencia de superarse y promover **llevar un tipo de vida mas saludable**. 
